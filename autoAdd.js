@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const child_process = require('child_process');
 const config = require('./src/config');
-const { forStrictNullCheckEligibleFiles } = require('./src/getStrictNullCheckEligibleFiles');
+const { forStrictNullCheckEligibleFiles, loadTsConfig } = require('./src/getStrictNullCheckEligibleFiles');
 
 const vscodeRoot = path.join(process.cwd(), process.argv[2]);
 const srcRoot = path.join(vscodeRoot, 'src');
@@ -19,7 +19,7 @@ const buildCompletePattern = /Found (\d+) errors?\. Watching for file changes\./
 forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules, { includeTests: false}).then(async (files) => {
     const tsconfigPath = path.join(srcRoot, config.targetTsconfig);
 
-    const child = child_process.spawn('tsc', ['-p', tsconfigPath, '--watch']);
+    const child = child_process.spawn('./node_modules/.bin/tsc', ['-p', tsconfigPath, '--watch']);
     for (const file of files) {
         await tryAutoAddStrictNulls(child, tsconfigPath, file);
     }
@@ -27,11 +27,11 @@ forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules, { includeTes
 });
 
 function tryAutoAddStrictNulls(child, tsconfigPath, file) {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
         const relativeFilePath = path.relative(srcRoot, file);
         console.log(`Trying to auto add '${relativeFilePath}'`);
 
-        const originalConifg = JSON.parse(fs.readFileSync(tsconfigPath).toString());
+        const originalConifg = await loadTsConfig(tsconfigPath);
         originalConifg.files = Array.from(new Set(originalConifg.files.sort()));
 
         // Config on accept

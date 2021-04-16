@@ -118,3 +118,4 @@ function loadTsConfig(path) {
         })
     })
 }
+module.exports.loadTsConfig = loadTsConfig
