@@ -9,9 +9,14 @@ const { forStrictNullCheckEligibleFiles } = require('./src/getStrictNullCheckEli
 const vscodeRoot = path.join(process.cwd(), process.argv[2]);
 const srcRoot = path.join(vscodeRoot, 'src');
 
+const nodeModules = [
+    ...Object.keys(require(path.join(vscodeRoot, 'package.json')).dependencies),
+    ...Object.keys(require(path.join(vscodeRoot, 'package.json')).devDependencies)
+]
+
 const buildCompletePattern = /Found (\d+) errors?\. Watching for file changes\./gi;
 
-forStrictNullCheckEligibleFiles(vscodeRoot, () => { }).then(async (files) => {
+forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules, { includeTests: false}).then(async (files) => {
     const tsconfigPath = path.join(srcRoot, config.targetTsconfig);
 
     const child = child_process.spawn('tsc', ['-p', tsconfigPath, '--watch']);

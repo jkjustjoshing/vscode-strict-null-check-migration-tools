@@ -6,6 +6,7 @@ const { getImportsForFile } = require('./src/tsHelper');
 
 const vscodeRoot = path.join(process.cwd(), process.argv[2]);
 const srcRoot = path.join(vscodeRoot, 'src');
+const pagesRoot = path.join(vscodeRoot, 'pages');
 
 let sort = true;
 let filter;
@@ -14,23 +15,34 @@ let includeTests = false;
 
 if (false) { // Generate test files listing
     sort = false;
-    filter = x => x.endsWith('.test.ts')
+    filter = (x => x.endsWith('.spec.ts') || x.endsWith('.spec.tsx'))
     printDependedOnCount = false;
     includeTests = true;
 }
 
-forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, { includeTests }).then(async eligibleFiles => {
+const nodeModules = [
+    ...Object.keys(require(path.join(vscodeRoot, 'package.json')).dependencies),
+    ...Object.keys(require(path.join(vscodeRoot, 'package.json')).devDependencies)
+]
+
+forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules).then(async eligibleFiles => {
     const eligibleSet = new Set(eligibleFiles);
 
     const dependedOnCount = new Map(eligibleFiles.map(file => [file, 0]));
 
-    for (const file of await forEachFileInSrc(srcRoot)) {
+    const files = [
+        ...await forEachFileInSrc(srcRoot),
+        ...await forEachFileInSrc(pagesRoot)
+    ]
+
+    for (const file of files) {
         if (eligibleSet.has(file)) {
             // Already added
             continue;
         }
 
-        for (const imp of getImportsForFile(file, srcRoot)) {
+        const imports = getImportsForFile(file, srcRoot, nodeModules)
+        for (const imp of imports) {
             if (dependedOnCount.has(imp)) {
                 dependedOnCount.set(imp, dependedOnCount.get(imp) + 1);
             }
