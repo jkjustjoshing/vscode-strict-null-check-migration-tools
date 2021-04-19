@@ -56,6 +56,7 @@ forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules).then(async e
     if (sort) {
         out = out.sort((a, b) => b[1] - a[1]);
     }
+    console.log(`Found ${out.length} eligible files:`)
     for (const pair of out) {
         console.log(toFormattedFilePath(pair[0]) + (printDependedOnCount ? ` — Depended on by **${pair[1]}** files` : ''));
     }
@@ -64,5 +65,5 @@ forStrictNullCheckEligibleFiles(vscodeRoot, () => { }, nodeModules).then(async e
 
 function toFormattedFilePath(file) {
     // return `"./${path.relative(srcRoot, file)}",`;
-    return `- [ ] \`"./${path.relative(srcRoot, file)}"\``;
+    return `- "./${path.relative(srcRoot, file)}"`.padEnd(55, ' ');
 }
