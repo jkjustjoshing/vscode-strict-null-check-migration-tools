@@ -26,7 +26,7 @@ module.exports.getImportsForFile = function getImportsForFile(file, srcRoot, nod
             }
             return fileName;
         }).map(fileName => {
-            const extensions = ['', '.ts', '.js', '.tsx', '.jsx', '.d.ts', '/index.ts', '/index.tsx']
+            const extensions = ['', '.ts', '.js', '.tsx', '.jsx', '.d.ts', '/index.ts', '/index.d.ts', '/index.tsx']
             for (const extension of extensions) {
                 const file = fileName + extension
                 if (fs.existsSync(file) && fs.lstatSync(file).isFile()) {
