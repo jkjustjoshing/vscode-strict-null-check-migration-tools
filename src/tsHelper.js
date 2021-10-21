@@ -18,6 +18,7 @@ module.exports.getImportsForFile = function getImportsForFile(file, srcRoot, nod
         .map(fileName => fileName === '.' ? path.dirname(file) : fileName)
         .filter(fileName => !/\.s?css$/.test(fileName)) // remove css imports
         .filter(fileName => !/\.svg$/.test(fileName)) // remove SVG imports
+        .filter(fileName => !fileName.startsWith('@storybook/')) // remove @storybook deps
         .filter(fileName => !fileName.startsWith('@mfj/') && !fileName.startsWith('homepage-data/') && !fileName.startsWith('styled-jsx'))
         .filter(x => /\//.test(x) && !nodeModules.some(m => x.startsWith(m))) // remove node modules (the import must contain '/', and not start with the name of a module, like lodash)
         .map(fileName => {
